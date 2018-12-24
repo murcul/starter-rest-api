@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import { Sequelize } from 'sequelize-typescript';
+import { User } from './models/user';
 
 dotenv.config();
 
@@ -10,6 +11,8 @@ const sequelize = new Sequelize({
   username: <string>process.env.DB_USER,
   password: <string>process.env.DB_PASS,
 });
+
+sequelize.addModels([User]);
 
 const db: any = {};
 
