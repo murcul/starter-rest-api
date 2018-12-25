@@ -1,10 +1,14 @@
 import * as Koa from 'koa';
+import * as qs from 'koa-qs';
+import * as koaValidator from 'koa-async-validator';
 import * as cors from '@koa/cors';
 import * as logger from 'koa-morgan';
 import * as bodyParser from 'koa-bodyparser';
-import router from './routes';
+import indexRoutes from './routes';
+import authRoutes from './routes/auth';
 
 const app: Koa = new Koa();
+qs(app);
 
 // Set middlewares
 app.use(
@@ -14,6 +18,8 @@ app.use(
     jsonLimit: '10mb',
   })
 );
+
+app.use(koaValidator());
 
 // Logger
 app.use(
@@ -43,6 +49,7 @@ app.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
 });
 
 // Routes
-app.use(router.routes());
+app.use(indexRoutes.routes());
+app.use(authRoutes.routes());
 
 export default app;
