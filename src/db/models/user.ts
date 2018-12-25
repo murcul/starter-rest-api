@@ -5,6 +5,7 @@ import {
   CreatedAt,
   DataType,
   PrimaryKey,
+  IFindOptions,
 } from 'sequelize-typescript';
 import { DataTypeUUIDv4 } from 'sequelize';
 
@@ -38,4 +39,16 @@ export class User extends Model<User> {
   @CreatedAt
   @Column({ defaultValue: DataType.NOW, allowNull: false })
   createdAt!: Date;
+
+  static async isExist(options: IFindOptions<User>) {
+    options.attributes = ['id'];
+
+    console.log(await User.findOne(options));
+
+    if (await User.findOne(options)) {
+      return true;
+    }
+
+    return false;
+  }
 }

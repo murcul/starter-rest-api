@@ -6,6 +6,7 @@ import * as logger from 'koa-morgan';
 import * as bodyParser from 'koa-bodyparser';
 import indexRoutes from './routes';
 import authRoutes from './routes/auth';
+import { User } from './db/models/user';
 
 const app: Koa = new Koa();
 qs(app);
@@ -19,7 +20,26 @@ app.use(
   })
 );
 
-app.use(koaValidator());
+app.use(
+  koaValidator({
+    customValidators: {
+      isUsernameExists: async (username: string) => {
+        return await User.isExist({
+          where: {
+            username: username,
+          },
+        });
+      },
+      isEmailExists: async (email: string) => {
+        return await User.isExist({
+          where: {
+            email: email,
+          },
+        });
+      },
+    },
+  })
+);
 
 // Logger
 app.use(

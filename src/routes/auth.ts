@@ -1,4 +1,3 @@
-import * as util from 'util';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as pbkdf2 from '@phc/pbkdf2';
@@ -9,12 +8,12 @@ const router: Router = new Router();
 
 router.post('/register', async (ctx: Koa.Context, next) => {
   // Validation
-  const errors = await validateUser(ctx);
+  const errors = await validateRegister(ctx);
 
   if (errors) {
     ctx.body = {
       success: false,
-      validator: errors,
+      errors: errors,
     };
   } else {
     await db.sequelize.sync().then(async () => {
@@ -44,27 +43,32 @@ router.post('/register', async (ctx: Koa.Context, next) => {
   await next();
 });
 
-async function validateUser(ctx: Koa.Context) {
+async function validateRegister(ctx: Koa.Context) {
   ctx
     .checkBody('username', "Username can't be empty")
     .notEmpty()
     .isAlphanumeric()
     .withMessage('Username is not valid')
     .len(3, 25)
-    .withMessage('Username must be between 3-25 characters long');
+    .withMessage('Username must be between 3-25 characters long')
+    .isUsernameExists()
+    .withMessage('Username address already exists');
+
   ctx
     .checkBody('email', 'Email address is not valid.')
     .isEmail()
     .len(4, 80)
-    .withMessage('Email address must be between 4-80 characters long');
+    .withMessage('Email address must be between 4-80 characters long')
+    .isEmailExists()
+    .withMessage('Email address already exists');
+
   ctx
     .checkBody('password', 'Password must be between 5-50 characters long')
     .len(5, 50);
+
   ctx.checkBody('role', 'Role is not valid').isIn('member', 'admin');
 
-  const errors = await ctx.validationErrors();
-
-  return errors;
+  return ctx.validationErrors();
 }
 
 export default router;
