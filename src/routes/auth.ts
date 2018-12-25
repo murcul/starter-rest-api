@@ -1,8 +1,12 @@
+import * as dotenv from 'dotenv';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as pbkdf2 from '@phc/pbkdf2';
+import * as jwt from 'jsonwebtoken';
 import db from '../db';
 import { User } from '../db/models/user';
+
+dotenv.config();
 
 const router: Router = new Router();
 
@@ -32,9 +36,19 @@ router.post('/login', async (ctx: Koa.Context, next) => {
         );
       }
 
-      if (match) {
+      if (user && match) {
+        var tokenUser = {
+          userId: user.id,
+          role: user.role,
+        };
+
+        let token = jwt.sign(tokenUser, <string>process.env.JWT_SECRET, {
+          expiresIn: 60 * 60 * 24,
+        });
+
         ctx.body = {
           success: true,
+          token: token,
         };
       } else {
         ctx.status = 401;
