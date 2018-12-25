@@ -6,6 +6,45 @@ import { User } from '../db/models/user';
 
 const router: Router = new Router();
 
+router.post('/login', async (ctx: Koa.Context, next) => {
+  // Validation
+  const errors = await validateLogin(ctx);
+
+  if (errors) {
+    ctx.body = {
+      success: false,
+      errors: errors,
+    };
+  } else {
+    await db.sequelize.sync().then(async () => {
+      const user = await User.findOne({
+        where: {
+          username: ctx.sanitizeBody('username').trim(),
+        },
+      });
+
+      let match = false;
+      if (user) {
+        match = await pbkdf2.verify(
+          user.password,
+          ctx.sanitizeBody('password').trim()
+        );
+      }
+
+      if (match) {
+        ctx.body = {
+          success: true,
+        };
+      } else {
+        ctx.body = {
+          success: false,
+          errors: ['Username or password is invalid'],
+        };
+      }
+    });
+  }
+});
+
 router.post('/register', async (ctx: Koa.Context, next) => {
   // Validation
   const errors = await validateRegister(ctx);
@@ -42,6 +81,24 @@ router.post('/register', async (ctx: Koa.Context, next) => {
 
   await next();
 });
+
+// Validation
+
+async function validateLogin(ctx: Koa.Context) {
+  ctx
+    .checkBody('username', "Username can't be empty")
+    .notEmpty()
+    .isAlphanumeric()
+    .withMessage('Username is not valid')
+    .len(3, 25)
+    .withMessage('Username must be between 3-25 characters long');
+
+  ctx
+    .checkBody('password', 'Password must be between 5-50 characters long')
+    .len(5, 50);
+
+  return ctx.validationErrors();
+}
 
 async function validateRegister(ctx: Koa.Context) {
   ctx
