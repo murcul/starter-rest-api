@@ -1,7 +1,7 @@
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as pbkdf2 from '@phc/pbkdf2';
-import db from '../db/connection';
+import db from '../db';
 import { User } from '../db/models/user';
 
 const router: Router = new Router();
@@ -11,6 +11,7 @@ router.post('/login', async (ctx: Koa.Context, next) => {
   const errors = await validateLogin(ctx);
 
   if (errors) {
+    ctx.status = 400;
     ctx.body = {
       success: false,
       errors: errors,
@@ -36,6 +37,7 @@ router.post('/login', async (ctx: Koa.Context, next) => {
           success: true,
         };
       } else {
+        ctx.status = 401;
         ctx.body = {
           success: false,
           errors: ['Username or password is invalid'],
@@ -50,6 +52,7 @@ router.post('/register', async (ctx: Koa.Context, next) => {
   const errors = await validateRegister(ctx);
 
   if (errors) {
+    ctx.status = 400;
     ctx.body = {
       success: false,
       errors: errors,
