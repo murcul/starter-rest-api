@@ -1,10 +1,15 @@
 import * as Koa from 'koa';
+import * as qs from 'koa-qs';
+import * as koaValidator from 'koa-async-validator';
 import * as cors from '@koa/cors';
 import * as logger from 'koa-morgan';
 import * as bodyParser from 'koa-bodyparser';
-import router from './routes';
+import indexRoutes from './routes';
+import authRoutes from './routes/auth';
+import { User } from './db/models/user';
 
 const app: Koa = new Koa();
+qs(app);
 
 // Set middlewares
 app.use(
@@ -12,6 +17,27 @@ app.use(
     enableTypes: ['json', 'form'],
     formLimit: '10mb',
     jsonLimit: '10mb',
+  })
+);
+
+app.use(
+  koaValidator({
+    customValidators: {
+      isUsernameExists: async (username: string) => {
+        return await User.isExist({
+          where: {
+            username: username,
+          },
+        });
+      },
+      isEmailExists: async (email: string) => {
+        return await User.isExist({
+          where: {
+            email: email,
+          },
+        });
+      },
+    },
   })
 );
 
@@ -43,6 +69,7 @@ app.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
 });
 
 // Routes
-app.use(router.routes());
+app.use(indexRoutes.routes());
+app.use(authRoutes.routes());
 
 export default app;

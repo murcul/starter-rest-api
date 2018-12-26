@@ -13,8 +13,7 @@ Make sure you read the FAQ for more details and info.
 
 ### Features:
 - [Koa](http://koajs.com/) as the web framework.
-- ES2017+ support with [Babel](https://babeljs.io/).
-- Automatic polyfill requires based on environment with [babel-preset-env](https://github.com/babel/babel-preset-env).
+- [TypeScript](https://www.typescriptlang.org/) typed superset of JavaScript.
 - Linting with [ESLint](http://eslint.org/).
 - Testing with [Jest](https://facebook.github.io/jest/).
 - Type checking with [Typescript](https://www.typescriptlang.org/)
